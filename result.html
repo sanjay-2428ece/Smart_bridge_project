@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlantCare AI - Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 30px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: background 0.3s;
+        }
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .result-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 40px;
+        }
+        .result-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .result-header h2 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .result-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+        .image-section {
+            text-align: center;
+        }
+        .image-section img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .image-section h3 {
+            margin: 20px 0 10px;
+        }
+        .info-section {
+            background: rgba(0,0,0,0.2);
+            padding: 30px;
+            border-radius: 10px;
+        }
+        .disease-name {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+        .confidence-bar {
+            margin: 20px 0;
+        }
+        .confidence-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .bar {
+            height: 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 10px;
+        }
+        .recommendations {
+            margin-top: 30px;
+        }
+        .recommendations h4 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        .recommendations ul {
+            list-style-type: none;
+        }
+        .recommendations li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        .recommendations li:before {
+            content: "🌿";
+            position: absolute;
+            left: 0;
+        }
+        .action-buttons {
+            margin-top: 40px;
+            text-align: center;
+        }
+        .btn {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 0 10px;
+            transition: transform 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+        }
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+        .plant-type {
+            font-size: 18px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <div class="logo">🌱 PlantCare AI</div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/upload">Upload</a>
+            </div>
+        </nav>
+
+        <div class="result-container">
+            <div class="result-header">
+                <h2>Analysis Complete</h2>
+                <p>Here's what we found in your plant image</p>
+            </div>
+
+            <div class="result-content">
+                <div class="image-section">
+                    <img src="{{ url_for('static', filename=image_path) }}" alt="Uploaded leaf">
+                    <h3>Uploaded Image</h3>
+                </div>
+
+                <div class="info-section">
+                    {% set plant_parts = prediction.disease.split('___') %}
+                    {% set plant_type = plant_parts[0] %}
+                    {% set disease_name = plant_parts[1].replace('_', ' ') %}
+                    
+                    <div class="plant-type">Plant: {{ plant_type }}</div>
+                    <div class="disease-name">{{ disease_name }}</div>
+                    
+                    <div class="confidence-bar">
+                        <div class="confidence-label">
+                            <span>Confidence</span>
+                            <span>{{ prediction.confidence_percentage }}%</span>
+                        </div>
+                        <div class="bar">
+                            <div class="bar-fill" style="width: {{ prediction.confidence_percentage }}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="recommendations">
+                        <h4>🌱 Recommendations</h4>
+                        <ul>
+                            {% if 'healthy' in prediction.disease.lower() %}
+                                <li>Your plant looks healthy! Continue regular care</li>
+                                <li>Maintain proper watering schedule</li>
+                                <li>Ensure adequate sunlight</li>
+                            {% else %}
+                                <li>Remove affected leaves to prevent spread</li>
+                                <li>Consider organic fungicides or pesticides</li>
+                                <li>Improve air circulation around plant</li>
+                                <li>Monitor nearby plants for symptoms</li>
+                            {% endif %}
+                            <li>Control temperature and humidity</li>
+                            <li>Ensure proper soil conditions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <a href="/upload" class="btn">Analyze Another Image</a>
+                <a href="/" class="btn btn-secondary">Back to Home</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

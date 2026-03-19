@@ -1,0 +1,288 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlantCare AI - Upload</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 30px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: background 0.3s;
+        }
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .upload-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 40px;
+            text-align: center;
+        }
+        .upload-area {
+            border: 3px dashed rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 60px 20px;
+            margin: 30px 0;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        .upload-area:hover {
+            border-color: white;
+        }
+        .upload-area i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+        .upload-area p {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .upload-area small {
+            opacity: 0.7;
+        }
+        #file-input {
+            display: none;
+        }
+        .preview-container {
+            margin: 30px 0;
+            display: none;
+        }
+        .preview-container img {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .analyze-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            display: none;
+        }
+        .analyze-btn:hover {
+            transform: translateY(-3px);
+        }
+        .loading {
+            display: none;
+            margin: 30px 0;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .tips {
+            text-align: left;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+        .tips h3 {
+            margin-bottom: 15px;
+        }
+        .tips ul {
+            list-style-type: none;
+        }
+        .tips li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        .tips li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <div class="logo">🌱 PlantCare AI</div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/upload">Upload</a>
+            </div>
+        </nav>
+
+        <div class="upload-container">
+            <h2>Upload Plant Image</h2>
+            <p>Take or upload a clear photo of the affected plant leaf</p>
+
+            <div class="upload-area" id="upload-area">
+                <i>📸</i>
+                <p>Drag & Drop Image Here</p>
+                <p>or click to browse from your device</p>
+                <small>Supports: JPG, PNG (Max 16MB)</small>
+            </div>
+
+            <input type="file" id="file-input" accept="image/*">
+
+            <div class="preview-container" id="preview-container">
+                <img id="preview-image" src="" alt="Preview">
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <p>Analyzing your plant image...</p>
+            </div>
+
+            <button class="analyze-btn" id="analyze-btn">Analyze Image</button>
+
+            <div class="tips">
+                <h3>📝 Tips for Best Results</h3>
+                <ul>
+                    <li>Take photos in good lighting</li>
+                    <li>Focus on the affected leaf area</li>
+                    <li>Keep the camera steady</li>
+                    <li>Include both healthy and diseased parts if possible</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const previewContainer = document.getElementById('preview-container');
+        const previewImage = document.getElementById('preview-image');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const loading = document.getElementById('loading');
+
+        // Click on upload area triggers file input
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Drag and drop handlers
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'white';
+        });
+
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(255,255,255,0.3)';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(255,255,255,0.3)';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect(files[0]);
+            }
+        });
+
+        // File selection handler
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                    analyzeBtn.style.display = 'inline-block';
+                    uploadArea.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please select an image file');
+            }
+        }
+
+        // Analyze button handler
+        analyzeBtn.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            // Show loading
+            loading.style.display = 'block';
+            analyzeBtn.style.display = 'none';
+
+            // Create form data
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                // Send to server
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Redirect to results page
+                    window.location.href = data.redirect;
+                } else {
+                    alert('Error: ' + data.error);
+                    loading.style.display = 'none';
+                    analyzeBtn.style.display = 'inline-block';
+                }
+            } catch (error) {
+                alert('Error uploading file');
+                loading.style.display = 'none';
+                analyzeBtn.style.display = 'inline-block';
+            }
+        });
+    </script>
+</body>
+</html>
